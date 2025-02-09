@@ -25,6 +25,6 @@ Use: ./tg -t TEMPLATE -a FILE [-o OUT_FILE_PREFIX]
 ```
 tg -t 'echo #' -a args.txt -o test
 ```
-выведет результат работы команд `echo 1```, `echo 2` и `echo 3` в соответствующие файлы `test1`, `test2` и `test3`.
+выведет результат работы команд `echo 1`, `echo 2` и `echo 3` в соответствующие файлы `test1`, `test2` и `test3`.
 
 Для работы скачайте файл tg и введите в командной строке `chmod +x tg`
