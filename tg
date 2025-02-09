@@ -1,0 +1,70 @@
+#!/bin/bash
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -t|--template)
+            COMMAND_TEMPLATE="$2"
+            shift 2 ;;
+        
+        -a|--arguments)
+            PLUGLIST="$2"
+            shift 2 ;;
+        
+        -o|--output-template)
+            OUTPUT_TEMPLATE="$2"
+            shift 2 ;;
+        
+        -h|--help)
+            echo ""
+	    echo "Use: ./run_plugins.sh -t TEMPLATE -a FILE [-o OUT_FILE_PREFIX]"
+	    echo ""
+	    echo "Основное:"
+            echo "  -t, --template TEMPLATE                Шаблон команды. В качестве места подстановки используйте знак #"
+            echo "  -a, --arguments FILE                   Файл со списком нужных аргументов, которые будут подставлены в шаблон на место знака #"
+	    echo "Опционально:"
+            echo "  -o, --output-template OUT_FILE_PREFIX  Шаблон имен файлов, в которые будут выведены результаты работы каждой команды."
+            
+            exit ;;
+        
+        *)
+            echo "Недопустимый флаг: $1"
+    esac
+done
+
+if [ ! "$COMMAND_TEMPLATE" ] || [ ! "$PLUGLIST" ]; then
+    echo "Укажите шаблон команды (-t) и файл с аргументами (-a)."
+    exit 1
+fi
+
+if [ ! -f "$PLUGLIST" ]; then
+    echo "Файл $PLUGLIST не найден."
+    exit 1
+fi
+
+while IFS= read -r plugin; do
+    plugin=${plugin%%[[:space:]]}
+    command=${COMMAND_TEMPLATE//#/$plugin}
+    
+    echo "Выполняем команду: $command"
+    
+    if [ "$OUTPUT_TEMPLATE" ]; then
+
+        # Если задан флаг -o, записываем результат в файл.
+        output_file="${OUTPUT_TEMPLATE}${plugin}"
+
+        sh -c "$command" > "${output_file}" || echo "Ошибка при выполнении команды."
+
+        echo "Результат записан в ${output_file}."
+
+    else
+
+        # Если нет флага -o, выводим результат на экран.
+        sh -c "$command" || echo "Ошибка при выполнении команды."
+        printf "\n\n"
+        printf "%0.s * " $(seq 1 20)
+        printf "\n\n"
+    fi
+
+done < "$PLUGLIST"
+
+echo "Выполнение завершено."
